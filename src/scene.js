@@ -1187,10 +1187,10 @@
 
   function maybeSpawnFallingPetal(t) {
     if (!controls.petals.checked || !foliageRegions.length) return;
-    if (fallingPetals.length > 5) return;
+    if (fallingPetals.length > 20) return;
 
     // About every 4-8 seconds on average.
-    if (Math.random() > 0.0105) return;
+    if (Math.random() > 0.03) return;
 
     const eligible = foliageRegions.filter(r => r.petalCandidates && r.petalCandidates.length);
     if (!eligible.length) return;
@@ -1205,7 +1205,7 @@
       sway: .6 + Math.random()*1.3,
       rot: Math.random()*Math.PI*2,
       vr: (Math.random()-.5) * .08,
-      size: src.type === "petal" ? 3 : 4,
+      size: src.type === "petal" ? 6 : 10,
       color: src.color,
       type: src.type,
       life: 0,
@@ -2319,9 +2319,9 @@
       ctx.globalAlpha = (.45 + I*.25) * fade;
       ctx.fillStyle = `rgb(${p.color[0]},${p.color[1]},${p.color[2]})`;
       if (p.type === "leaf") {
-        ctx.fillRect(-1.5, -2.5, 3, 5);
+        ctx.fillRect(-1.5, -2.5, 7, 5);
       } else {
-        ctx.fillRect(-1.5, -1.5, 3, 3);
+        ctx.fillRect(-1.5, -1.5, 7, 3);
       }
       ctx.restore();
     }
