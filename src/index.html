@@ -1,0 +1,539 @@
+<!doctype html>
+<html lang="en" class="h-full bg-[#080812]">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="color-scheme" content="dark" />
+    <title>Cyberpunk Family — Live Canvas Wallpaper</title>
+
+    <link rel="stylesheet" href="../assets/fonts/Geist-Pixel.css" />
+
+    <!-- Tailwind Play CDN: appropriate for this single-file local wallpaper app. -->
+    <script src="../assets/tailwind.3.4.17.js"></script>
+  </head>
+  <body
+    class="h-full overflow-hidden bg-[#080812] text-slate-100 antialiased"
+    style="font-family: Geist Pixel;"
+  >
+    <main
+      id="stage"
+      class="relative w-full h-full inset-0 overflow-hidden bg-[#080812] grid justify-center"
+      aria-label="Animated cyberpunk wallpaper"
+    >
+      <canvas
+        id="canvas"
+        class="block h-full w-full fixed t-0 [image-rendering:pixelated]"
+        aria-hidden="true"
+      ></canvas>
+
+      <div
+        class="text-center mb-auto mt-[20vh] grid gap-2 mv-auto"
+        style="
+          align-content: center;
+          text-shadow: 2px 2px black, 2px -2px black, -2px 2px black;
+          filter: drop-shadow(2px 2px 1px rgba(0,0,0,0.25)) drop-shadow(2px -2px 1px rgba(0,0,0,0.25))
+            drop-shadow(-2px 2px 1px rgba(0,0,0,0.25)) drop-shadow(-2px -2px 1px rgba(0,0,0,0.25));
+        "
+      >
+        <!-- Clock -->
+        <h1 id="clock" class="text-6xl z-10 font-black" style="--letter-spacing: 1rem">
+          --:-- --
+        </h1>
+        <!-- Date -->
+        <h2 id="date" class="text-2xl z-10">-----, ---- -, ---</h2>
+
+        <!-- Weather -->
+        <div id="weather" class="text-xl z-10">
+          <span id="weather-icon">--</span>
+
+          <span id="weather-temp">--°</span>
+
+          <span class="text-white/40">·</span>
+
+          <span id="weather-condition">Loading weather…</span>
+
+          <span class="text-white/40">·</span>
+
+          <span id="weather-sunset"></span>
+        </div>
+        <div class="text-sm text-[#a0a0a0] z-10 font-bold">
+          <span>&#x1F4CD;</span>
+          <span id="weather-location">Detecting location…</span>
+        </div>
+      </div>
+    </main>
+
+    <aside
+      id="hud"
+      class="fixed right-4 top-4 z-50 hidden max-h-[calc(100vh-2rem)] w-[min(320px,calc(100vw-2rem))] select-none overflow-y-auto rounded-2xl border border-white/15 bg-slate-950/85 p-4 shadow-2xl shadow-black/40 backdrop-blur-xl backdrop-saturate-150 max-sm:inset-x-3 max-sm:bottom-3 max-sm:top-auto max-sm:max-h-[58vh] max-sm:w-auto"
+      aria-label="Ambient city controls"
+    >
+      <header class="mb-3 flex items-center justify-between gap-3">
+        <h1 class="text-sm font-semibold tracking-wide text-white">
+          Ambient City Controls
+        </h1>
+        <span id="fpsReadout" class="text-[11px] tabular-nums text-slate-400"
+          >30 fps</span
+        >
+      </header>
+
+      <section
+        aria-label="Animation presets"
+        class="mb-4 grid grid-cols-3 gap-1.5"
+      >
+        <button
+          type="button"
+          data-preset="barely"
+          class="rounded-lg border border-white/15 bg-white/[0.06] px-3 py-2 text-xs font-medium text-slate-100 transition hover:bg-white/[0.11] focus:outline-none focus:ring-2 focus:ring-cyan-300/50 !px-1.5 !py-1.5"
+        >
+          Barely Alive
+        </button>
+        <button
+          type="button"
+          data-preset="calm"
+          class="rounded-lg border border-white/15 bg-white/[0.06] px-3 py-2 text-xs font-medium text-slate-100 transition hover:bg-white/[0.11] focus:outline-none focus:ring-2 focus:ring-cyan-300/50 !border-cyan-300/35 !bg-cyan-300/10 !px-1.5 !py-1.5"
+        >
+          Calm
+        </button>
+        <button
+          type="button"
+          data-preset="alive"
+          class="rounded-lg border border-white/15 bg-white/[0.06] px-3 py-2 text-xs font-medium text-slate-100 transition hover:bg-white/[0.11] focus:outline-none focus:ring-2 focus:ring-cyan-300/50 !px-1.5 !py-1.5"
+        >
+          More Alive
+        </button>
+      </section>
+
+      <section aria-label="Animation values" class="space-y-3">
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between gap-3">
+            <label for="intensity" class="text-xs font-medium text-slate-100"
+              >Intensity</label
+            >
+            <output
+              id="intensityValue"
+              for="intensity"
+              class="min-w-12 text-right text-[11px] tabular-nums text-slate-400"
+              >100%</output
+            >
+          </div>
+          <input
+            id="intensity"
+            class="w-full cursor-pointer accent-cyan-300"
+            type="range"
+            min="0"
+            max="1"
+            value="1"
+            step=".01"
+          />
+        </div>
+
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between gap-3">
+            <label for="speed" class="text-xs font-medium text-slate-100"
+              >Motion speed</label
+            >
+            <output
+              id="speedValue"
+              for="speed"
+              class="min-w-12 text-right text-[11px] tabular-nums text-slate-400"
+              >150%</output
+            >
+          </div>
+          <input
+            id="speed"
+            class="w-full cursor-pointer accent-cyan-300"
+            type="range"
+            min=".2"
+            max="1.5"
+            value="1.5"
+            step=".01"
+          />
+        </div>
+
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between gap-3">
+            <label for="shipCount" class="text-xs font-medium text-slate-100"
+              >Distant ships</label
+            >
+            <output
+              id="shipCountValue"
+              for="shipCount"
+              class="min-w-12 text-right text-[11px] tabular-nums text-slate-400"
+              >12</output
+            >
+          </div>
+          <input
+            id="shipCount"
+            class="w-full cursor-pointer accent-cyan-300"
+            type="range"
+            min="0"
+            max="12"
+            value="12"
+            step="1"
+          />
+        </div>
+
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between gap-3">
+            <label
+              for="lanternStrength"
+              class="text-xs font-medium text-slate-100"
+              >Lantern haze strength</label
+            >
+            <output
+              id="lanternStrengthValue"
+              for="lanternStrength"
+              class="min-w-12 text-right text-[11px] tabular-nums text-slate-400"
+              >85%</output
+            >
+          </div>
+          <input
+            id="lanternStrength"
+            class="w-full cursor-pointer accent-cyan-300"
+            type="range"
+            min="0"
+            max="1.5"
+            value=".85"
+            step=".01"
+          />
+        </div>
+
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between gap-3">
+            <label
+              for="lanternRadius"
+              class="text-xs font-medium text-slate-100"
+              >Lantern haze radius</label
+            >
+            <output
+              id="lanternRadiusValue"
+              for="lanternRadius"
+              class="min-w-12 text-right text-[11px] tabular-nums text-slate-400"
+              >130%</output
+            >
+          </div>
+          <input
+            id="lanternRadius"
+            class="w-full cursor-pointer accent-cyan-300"
+            type="range"
+            min=".55"
+            max="1.8"
+            value="1.3"
+            step=".01"
+          />
+        </div>
+
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between gap-3">
+            <label for="fogStrength" class="text-xs font-medium text-slate-100"
+              >Valley fog strength</label
+            >
+            <output
+              id="fogStrengthValue"
+              for="fogStrength"
+              class="min-w-12 text-right text-[11px] tabular-nums text-slate-400"
+              >200%</output
+            >
+          </div>
+          <input
+            id="fogStrength"
+            class="w-full cursor-pointer accent-cyan-300"
+            type="range"
+            min="0"
+            max="2"
+            value="2"
+            step=".01"
+          />
+        </div>
+
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between gap-3">
+            <label for="fogFlowSpeed" class="text-xs font-medium text-slate-100"
+              >Valley fog speed</label
+            >
+            <output
+              id="fogFlowSpeedValue"
+              for="fogFlowSpeed"
+              class="min-w-12 text-right text-[11px] tabular-nums text-slate-400"
+              >35%</output
+            >
+          </div>
+          <input
+            id="fogFlowSpeed"
+            class="w-full cursor-pointer accent-cyan-300"
+            type="range"
+            min=".25"
+            max="2.2"
+            value=".35"
+            step=".01"
+          />
+        </div>
+
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between gap-3">
+            <label
+              for="vaporStrength"
+              class="text-xs font-medium text-slate-100"
+              >Mug vapor strength</label
+            >
+            <output
+              id="vaporStrengthValue"
+              for="vaporStrength"
+              class="min-w-12 text-right text-[11px] tabular-nums text-slate-400"
+              >75%</output
+            >
+          </div>
+          <input
+            id="vaporStrength"
+            class="w-full cursor-pointer accent-cyan-300"
+            type="range"
+            min="0"
+            max="2"
+            value=".75"
+            step=".01"
+          />
+        </div>
+
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between gap-3">
+            <label for="vaporWidth" class="text-xs font-medium text-slate-100"
+              >Mug vapor width</label
+            >
+            <output
+              id="vaporWidthValue"
+              for="vaporWidth"
+              class="min-w-12 text-right text-[11px] tabular-nums text-slate-400"
+              >204%</output
+            >
+          </div>
+          <input
+            id="vaporWidth"
+            class="w-full cursor-pointer accent-cyan-300"
+            type="range"
+            min=".5"
+            max="2.4"
+            value="2.04"
+            step=".01"
+          />
+        </div>
+      </section>
+
+      <fieldset class="mt-4">
+        <legend
+          class="mb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-400"
+        >
+          Effects
+        </legend>
+        <div class="grid grid-cols-2 gap-2">
+          <label
+            class="flex min-h-10 items-center gap-2 rounded-lg border border-white/15 bg-white/[0.035] px-3 py-2 text-xs text-slate-100"
+            ><input
+              id="lights"
+              class="accent-cyan-300"
+              type="checkbox"
+              checked
+            /><span>City lights</span></label
+          >
+          <label
+            class="flex min-h-10 items-center gap-2 rounded-lg border border-white/15 bg-white/[0.035] px-3 py-2 text-xs text-slate-100"
+            ><input
+              id="ships"
+              class="accent-cyan-300"
+              type="checkbox"
+              checked
+            /><span>Ships</span></label
+          >
+          <label
+            class="flex min-h-10 items-center gap-2 rounded-lg border border-white/15 bg-white/[0.035] px-3 py-2 text-xs text-slate-100"
+            ><input
+              id="haze"
+              class="accent-cyan-300"
+              type="checkbox"
+              checked
+            /><span>Valley fog</span></label
+          >
+          <label
+            class="flex min-h-10 items-center gap-2 rounded-lg border border-white/15 bg-white/[0.035] px-3 py-2 text-xs text-slate-100"
+            ><input
+              id="waterfalls"
+              class="accent-cyan-300"
+              type="checkbox"
+              checked
+            /><span>Waterfalls</span></label
+          >
+          <label
+            class="flex min-h-10 items-center gap-2 rounded-lg border border-white/15 bg-white/[0.035] px-3 py-2 text-xs text-slate-100"
+            ><input
+              id="lanterns"
+              class="accent-cyan-300"
+              type="checkbox"
+              checked
+            /><span>Lantern haze</span></label
+          >
+          <label
+            class="flex min-h-10 items-center gap-2 rounded-lg border border-white/15 bg-white/[0.035] px-3 py-2 text-xs text-slate-100"
+            ><input
+              id="petals"
+              class="accent-cyan-300"
+              type="checkbox"
+              checked
+            /><span>Falling leaf / petal</span></label
+          >
+          <label
+            class="flex min-h-10 items-center gap-2 rounded-lg border border-white/15 bg-white/[0.035] px-3 py-2 text-xs text-slate-100"
+            ><input
+              id="mugVapor"
+              class="accent-cyan-300"
+              type="checkbox"
+              checked
+            /><span>Mug vapor</span></label
+          >
+          <label
+            class="flex min-h-10 items-center gap-2 rounded-lg border border-white/15 bg-white/[0.035] px-3 py-2 text-xs text-slate-100"
+            ><input
+              id="depthOcclusion"
+              class="accent-cyan-300"
+              type="checkbox"
+              checked
+            /><span>Ship depth</span></label
+          >
+          <label
+            class="flex min-h-10 items-center gap-2 rounded-lg border border-white/15 bg-white/[0.035] px-3 py-2 text-xs text-slate-100"
+            ><input
+              id="showDepth"
+              class="accent-cyan-300"
+              type="checkbox"
+            /><span>Show depth map</span></label
+          >
+        </div>
+      </fieldset>
+
+      <section aria-label="Scene diagnostics" class="mt-4 space-y-2">
+        <div
+          class="flex items-center justify-between gap-3 border-t border-white/10 pt-3"
+        >
+          <span class="text-xs font-medium text-slate-100">Scene analysis</span>
+          <output
+            id="analysisStatus"
+            class="text-right text-[11px] tabular-nums text-slate-400"
+            aria-live="polite"
+          >
+            Analyzing…
+          </output>
+        </div>
+        <label
+          class="flex min-h-10 items-center gap-2 rounded-lg border border-white/15 bg-white/[0.035] px-3 py-2 text-xs text-slate-100"
+          ><input
+            id="showAnchors"
+            class="accent-cyan-300"
+            type="checkbox"
+          /><span>Show detected anchors</span></label
+        >
+        <label
+          class="flex min-h-10 items-center gap-2 rounded-lg border border-white/15 bg-white/[0.035] px-3 py-2 text-xs text-slate-100"
+          ><input
+            id="showFogDetection"
+            class="accent-cyan-300"
+            type="checkbox"
+          /><span>Show fog detection</span></label
+        >
+        <label
+          class="flex min-h-10 items-center gap-2 rounded-lg border border-white/15 bg-white/[0.035] px-3 py-2 text-xs text-slate-100"
+          ><input
+            id="showMugDetection"
+            class="accent-cyan-300"
+            type="checkbox"
+          /><span>Show mug vapor detection</span></label
+        >
+      </section>
+
+      <section
+        aria-label="Wallpaper actions"
+        class="mt-4 grid grid-cols-2 gap-2 border-t border-white/10 pt-4"
+      >
+        <button
+          id="pause"
+          type="button"
+          class="rounded-lg border border-white/15 bg-white/[0.06] px-3 py-2 text-xs font-medium text-slate-100 transition hover:bg-white/[0.11] focus:outline-none focus:ring-2 focus:ring-cyan-300/50"
+        >
+          Pause
+        </button>
+        <button
+          id="fullscreen"
+          type="button"
+          class="rounded-lg border border-white/15 bg-white/[0.06] px-3 py-2 text-xs font-medium text-slate-100 transition hover:bg-white/[0.11] focus:outline-none focus:ring-2 focus:ring-cyan-300/50"
+        >
+          Fullscreen
+        </button>
+
+        <label
+          for="fileInput"
+          class="rounded-lg border border-white/15 bg-white/[0.06] px-3 py-2 text-xs font-medium text-slate-100 transition hover:bg-white/[0.11] focus:outline-none focus:ring-2 focus:ring-cyan-300/50 cursor-pointer text-center"
+        >
+          Load another image
+        </label>
+        <input id="fileInput" class="hidden" type="file" accept="image/*" />
+
+        <button
+          id="resetSettings"
+          type="button"
+          class="rounded-lg border border-white/15 bg-white/[0.06] px-3 py-2 text-xs font-medium text-slate-100 transition hover:bg-white/[0.11] focus:outline-none focus:ring-2 focus:ring-cyan-300/50"
+        >
+          Reset settings
+        </button>
+        <button
+          id="hide"
+          type="button"
+          class="rounded-lg border border-white/15 bg-white/[0.06] px-3 py-2 text-xs font-medium text-slate-100 transition hover:bg-white/[0.11] focus:outline-none focus:ring-2 focus:ring-cyan-300/50"
+        >
+          Hide controls
+        </button>
+      </section>
+
+      <p class="mt-3 text-[10px] leading-relaxed text-slate-400">
+        <kbd class="font-semibold text-slate-300">H</kbd> controls ·
+        <kbd class="font-semibold text-slate-300">Space</kbd> pause ·
+        <kbd class="font-semibold text-slate-300">F</kbd> fullscreen. Settings
+        persist automatically in localStorage.
+      </p>
+    </aside>
+
+    <button
+      id="mini"
+      type="button"
+      class="fixed right-3.5 top-3.5 z-50 grid size-10 place-items-center rounded-full border border-white/15 bg-slate-950/65 text-base text-slate-100 shadow-lg shadow-black/30 backdrop-blur-md transition hover:bg-slate-900/80 focus:outline-none focus:ring-2 focus:ring-cyan-300/50"
+      aria-label="Show wallpaper controls"
+      title="Show controls"
+    >
+      ⚙
+    </button>
+    <style>
+
+      :root {
+        --letter-spacing: 0px;
+      }
+
+      .monomon {
+        width: calc(1.2ch + var(--letter-spacing));
+        text-align: center;
+        display: inline-block;
+        vertical-align:  baseline;
+        white-space: pre;
+      }
+    </style>
+    <script>
+      function stringToMonospaceSpans(str) {
+        return str.replace(/(.)/g, "<span class='monomon'>$1</span>");
+      }
+    </script>
+
+    <script src="./scene.js"></script>
+
+    <script src="./clock.js"></script>
+    <script src="./weather.js"></script>
+  </body>
+</html>
