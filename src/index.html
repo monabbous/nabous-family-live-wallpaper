@@ -9,6 +9,13 @@
     <meta name="color-scheme" content="dark" />
     <title>Cyberpunk Family — Live Canvas Wallpaper</title>
 
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Geist+Pixel&display=swap"
+      rel="stylesheet"
+    />
+
     <link rel="stylesheet" href="../assets/fonts/Geist-Pixel.css" />
 
     <!-- Tailwind Play CDN: appropriate for this single-file local wallpaper app. -->
@@ -16,7 +23,7 @@
   </head>
   <body
     class="h-full overflow-hidden bg-[#080812] text-slate-100 antialiased"
-    style="font-family: 'Geist Pixel'"
+    style="font-family: &quot;Geist Pixel&quot;"
   >
     <main
       id="stage"
@@ -509,6 +516,10 @@
         <kbd class="font-semibold text-slate-300">F</kbd> fullscreen. Settings
         persist automatically in localStorage.
       </p>
+
+      <audio id="background-music" controls loop>
+        <source src="../assets/background.mp3" autoplay type="audio/mpeg" />
+      </audio>
     </aside>
 
     <button
@@ -521,7 +532,6 @@
       ⚙
     </button>
     <style>
-
       :root {
         --letter-spacing: 0px;
       }
@@ -530,7 +540,7 @@
         width: calc(1.2ch + var(--letter-spacing));
         text-align: center;
         display: inline-block;
-        vertical-align:  baseline;
+        vertical-align: baseline;
         white-space: pre;
       }
     </style>
@@ -538,6 +548,12 @@
       function stringToMonospaceSpans(str) {
         return str.replace(/(.)/g, "<span class='monomon'>$1</span>");
       }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        const backgroundMusic = document.getElementById("background-music");
+        // backgroundMusic.play();
+        backgroundMusic.volume = 0.2; // Set the volume to 20%
+      });
     </script>
 
     <script src="./scene.js"></script>
